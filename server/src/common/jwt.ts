@@ -1,6 +1,6 @@
-import elysisaJwt from '@elysiajs/jwt';
+import { jwt as jwts } from '@elysiajs/jwt';
 
-const jwt = elysisaJwt({
+const jwt = jwts({
   name: 'jwt',
   secret: Bun.env.JWT_SECRET || 'Sorasaki Hina',
   exp: '7d',

@@ -15,6 +15,7 @@ import {
   unprocessable,
 } from '../../../common/utils';
 import jwt from '../../../common/jwt';
+import { validateToken } from '../../../common/auth';
 
 export const user = new Elysia({ prefix: '/user' })
   .use(jwt)
@@ -73,7 +74,11 @@ export const user = new Elysia({ prefix: '/user' })
         return unauthorized();
       }
 
-      const token = await jwt.sign({ id: findUser[0].id });
+      const token = await jwt.sign({
+        id: findUser[0].id,
+        username: findUser[0].username,
+        email: findUser[0].email,
+      });
 
       return {
         success: true,
@@ -87,31 +92,36 @@ export const user = new Elysia({ prefix: '/user' })
     },
     { body: loginUserBody }
   )
-  .guard({
-    beforeHandle({ headers: { authorization, ...headers } }) {
-      if (!authorization || authorization.toString() === '') {
-        return unauthorized();
-      }
-    },
-  })
   .get(
     '/search',
-    async ({ query: { q } }) => {
-      const find = await findByUsername(q);
+    async ({ query: { q }, jwt, headers: { authorization } }) => {
+      const tok = validateToken(authorization || '');
 
-      if (!find.length) {
-        return notFound('User not found');
+      if (typeof tok === 'string') {
+        const user = await jwt.verify(tok);
+
+        if (!user) {
+          return unauthorized();
+        }
+
+        const find = await findByUsername(q);
+
+        if (!find.length) {
+          return notFound('User not found');
+        }
+
+        return {
+          success: true,
+          message: 'User found!',
+          data: {
+            id: find[0].id,
+            username: find[0].username,
+            email: find[0].email,
+          },
+        };
       }
 
-      return {
-        success: true,
-        message: 'User found!',
-        data: {
-          id: find[0].id,
-          username: find[0].username,
-          email: find[0].email,
-        },
-      };
+      return tok;
     },
     {
       query: userSearchQuery,

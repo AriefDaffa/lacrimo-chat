@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import { unauthorized } from './utils';
+import jwt from './jwt';
 
 export const validateToken = (token: string) => {
   if (!token || token.toString() === '') {
@@ -14,5 +15,3 @@ export const validateToken = (token: string) => {
 
   return splitToken;
 };
-
-// export const authMiddleware = new Elysia().derive()

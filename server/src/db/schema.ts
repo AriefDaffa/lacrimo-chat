@@ -10,27 +10,44 @@ export const users = pgTable('users', {
 });
 
 export const usersRelations = relations(users, ({ many }) => ({
-  chats: many(chats),
+  rooms: many(rooms),
 }));
 
-export const chats = pgTable('chats', {
+export const rooms = pgTable('rooms', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
-  senderId: integer('sender_id').references(() => users.id),
+  senderOne: integer('sender_one').references(() => users.id),
+  senderTwo: integer('sender_two').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const roomsRelations = relations(rooms, ({ one, many }) => ({
+  sender: one(users, {
+    fields: [rooms.senderOne, rooms.senderTwo],
+    references: [users.id, users.id],
+  }),
+  messages: many(messages),
+}));
+
+export const messages = pgTable('messages', {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  roomId: integer('room_id').references(() => rooms.id),
   message: varchar().notNull(),
 });
 
-export const chatsRelations = relations(chats, ({ one }) => ({
-  sender: one(users, {
-    fields: [chats.senderId],
-    references: [users.id],
+export const messageRelations = relations(messages, ({ one }) => ({
+  room: one(rooms, {
+    fields: [messages.id],
+    references: [rooms.id],
   }),
 }));
 
 export const Table = {
   users,
-  chats,
+  rooms,
+  messages,
   usersRelations,
-  chatsRelations,
+  roomsRelations,
+  messageRelations,
 } as const;
 
 export type Table = typeof Table;

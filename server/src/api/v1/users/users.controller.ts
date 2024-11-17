@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia';
+import { Elysia, t } from 'elysia';
 
 import {
   _createUser,
@@ -16,9 +16,11 @@ import {
 } from '../../../common/utils';
 import jwt from '../../../common/jwt';
 import { validateToken } from '../../../common/auth';
+import { cookie } from '@elysiajs/cookie';
 
 export const user = new Elysia({ prefix: '/user' })
   .use(jwt)
+  .use(cookie())
   .post(
     '/register',
     async ({ body: { email, password, username } }) => {
@@ -56,9 +58,10 @@ export const user = new Elysia({ prefix: '/user' })
     },
     { body: registerBody }
   )
+
   .post(
     '/login',
-    async ({ body, jwt }) => {
+    async ({ body, jwt, cookie: { token } }) => {
       const findUser = await findByEmail(body.email);
 
       if (findUser.length == 0) {
@@ -74,11 +77,18 @@ export const user = new Elysia({ prefix: '/user' })
         return unauthorized();
       }
 
-      const token = await jwt.sign({
+      const tok = await jwt.sign({
         id: findUser[0].id,
         username: findUser[0].username,
         email: findUser[0].email,
       });
+
+      token.maxAge = 86400;
+      // token.secure = true;
+      // token.httpOnly = true;
+      token.value = tok;
+      // token.sameSite = 'none';
+      // token.domain = 'localhost:3001';
 
       return {
         success: true,
@@ -86,11 +96,16 @@ export const user = new Elysia({ prefix: '/user' })
         data: {
           username: findUser[0].username,
           email: findUser[0].email,
-          token,
+          token: tok,
         },
       };
     },
-    { body: loginUserBody }
+    {
+      body: loginUserBody,
+      // cookie: t.Cookie({
+      //   token: t.String(),
+      // }),
+    }
   )
   .get(
     '/search',

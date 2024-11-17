@@ -9,8 +9,10 @@ export const users = pgTable('users', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   rooms: many(rooms),
+  msgSender: one(messages),
+  msgReceiver: one(messages),
 }));
 
 export const rooms = pgTable('rooms', {
@@ -31,7 +33,10 @@ export const roomsRelations = relations(rooms, ({ one, many }) => ({
 export const messages = pgTable('messages', {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   roomId: integer('room_id').references(() => rooms.id),
+  sender: integer().references(() => users.id),
+  receiver: integer().references(() => users.id),
   message: varchar().notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const messageRelations = relations(messages, ({ one }) => ({

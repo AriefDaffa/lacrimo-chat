@@ -1,81 +1,102 @@
 import { Elysia, t } from 'elysia';
+
 import { notFound, unauthorized } from '../../../common/utils';
 import jwt from '../../../common/jwt';
-import { db } from '../../../db/connection';
-import { messages, rooms, users } from '../../../db/schema';
-import { and, eq, or } from 'drizzle-orm';
+import {
+  createRoom,
+  findMessage,
+  findRoom,
+  insertMessage,
+} from './chat.service';
+import { findUserByID } from '../users/users.service';
+import { extractToken } from '../../../utils/extractToken';
 
 export const chat = new Elysia()
   .use(jwt)
+  .get(
+    '/message',
+    async ({ query: { id }, headers, jwt }) => {
+      const authToken = headers['authorization'];
+
+      if (!authToken || authToken.toString() === '') {
+        return unauthorized();
+      }
+
+      const splittedToken = extractToken(authToken);
+
+      const user = await jwt.verify(splittedToken);
+
+      if (!user) {
+        return unauthorized();
+      }
+
+      const message = await findMessage(Number(user.id), Number(id));
+
+      return {
+        success: true,
+        message: 'Data fetched!',
+        data: {
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          },
+          messages: message,
+        },
+      };
+    },
+    {
+      query: t.Object({
+        id: t.String(),
+      }),
+    }
+  )
   .derive(async ({ headers, jwt, query: { id } }) => {
-    const authToken = headers['authorization'];
+    const authToken = headers['sec-websocket-protocol'];
 
     if (!authToken || authToken.toString() === '') {
       return unauthorized();
     }
 
-    const splittedToken = authToken.split('Bearer ')[1];
-
-    if (typeof splittedToken !== 'string') {
-      return unauthorized();
-    }
-
-    const user = await jwt.verify(splittedToken);
+    const user = await jwt.verify(authToken);
 
     if (!user) {
       return unauthorized();
     }
 
     // find chat target
-    const [findUser] = await db
-      .select()
-      .from(users)
-      .where(eq(users.id, Number(id)));
+    const [findUser] = await findUserByID(Number(id));
 
     if (!findUser) {
       return notFound();
     }
 
-    // find room, if not found create one
-    const [room] = await db
-      .select()
-      .from(rooms)
-      .where(
-        or(
-          and(
-            eq(rooms.senderOne, Number(user.id)),
-            eq(rooms.senderTwo, Number(findUser.id))
-          ),
-          and(
-            eq(rooms.senderTwo, Number(user.id)),
-            eq(rooms.senderOne, Number(findUser.id))
-          )
-        )
-      );
+    const senderID = Number(user.id);
+    const receiverID = findUser.id;
 
-    console.log('rum', room);
+    // find room, if not found create one
+    const [room] = await findRoom(senderID, receiverID);
 
     let roomID = '';
 
     if (!room) {
-      const [createRoom] = await db
-        .insert(rooms)
-        .values({
-          senderOne: Number(user.id),
-          senderTwo: Number(findUser.id),
-        })
-        .returning();
+      const [createdRoom] = await createRoom(senderID, receiverID);
 
-      roomID = String(createRoom.id);
+      roomID = String(createdRoom.id);
     } else {
       roomID = String(room.id);
     }
 
     return {
-      user: {
+      senderData: {
         id: user ? user.id : 0,
         username: user ? user.username : '',
         email: user ? user.email : '',
+      },
+      receiverData: {
+        id: findUser ? findUser.id : 0,
+        username: findUser ? findUser.username : '',
+        email: findUser ? findUser.email : '',
       },
       roomID,
       room,
@@ -88,18 +109,27 @@ export const chat = new Elysia()
     open(ws) {
       const roomID = ws.data.roomID;
       ws.subscribe(roomID);
-      ws.send(ws.data.room);
+      ws.send(ws.data.room || '');
     },
     async message(ws, message) {
-      const roomID = ws.data.roomID;
+      const roomID = Number(ws.data.roomID) || 0;
+      const senderID = Number(ws.data.senderData.id) || 0;
+      const receiverID = Number(ws.data.receiverData.id) || 0;
 
       try {
-        await db.insert(messages).values({
-          message: String(message),
-          roomId: Number(roomID),
+        await insertMessage(String(message), roomID, senderID, receiverID);
+
+        ws.send({
+          senderID: senderID,
+          message,
+          time: new Date(),
         });
 
-        ws.publish(roomID, message);
+        ws.publish(String(roomID), {
+          senderID: senderID,
+          message,
+          time: new Date(),
+        });
       } catch (error) {
         ws.send(error);
       }

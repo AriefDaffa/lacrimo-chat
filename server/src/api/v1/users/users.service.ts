@@ -12,6 +12,13 @@ export const findByUsername = async (username: string) => {
   return await db.select().from(users).where(eq(users.username, username));
 };
 
+export const findUserByID = async (id: number) => {
+  return await db
+    .select()
+    .from(users)
+    .where(eq(users.id, Number(id)));
+};
+
 export const register = async (body: IRegister) => {
   return await db.insert(users).values(body).returning();
 };

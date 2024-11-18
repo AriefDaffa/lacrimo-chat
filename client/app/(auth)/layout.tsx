@@ -8,10 +8,10 @@ interface layoutProps {
 const layout: FC<layoutProps> = ({ children }) => {
   return (
     <div className="flex h-screen w-full">
-      <div className="flex w-full items-center justify-center p-20">
+      <div className="flex w-full items-center justify-center xl:w-1/2">
         {children}
       </div>
-      <div className="w-full bg-red-200">
+      <div className="hidden w-1/2 xl:block">
         <Image
           src="/images/login-pic.jpg"
           alt=""

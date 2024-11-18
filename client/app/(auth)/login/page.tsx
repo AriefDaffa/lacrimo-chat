@@ -4,7 +4,7 @@ import LoginHeader from "./_components/LoginHeader";
 
 const Page = () => {
   return (
-    <div className="w-full rounded-lg bg-white p-4">
+    <div className="w-full max-w-[520px] rounded-lg bg-white p-4">
       <Flexer gap="4">
         <LoginHeader />
         <LoginForm />

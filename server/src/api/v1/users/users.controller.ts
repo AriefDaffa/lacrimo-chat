@@ -58,14 +58,13 @@ export const user = new Elysia({ prefix: '/user' })
     },
     { body: registerBody }
   )
-
   .post(
     '/login',
     async ({ body, jwt, cookie: { token } }) => {
       const findUser = await findByEmail(body.email);
 
       if (findUser.length == 0) {
-        return unauthorized();
+        return badRequest('Invalid credentials');
       }
 
       const isMatch = await Bun.password.verify(
@@ -84,11 +83,8 @@ export const user = new Elysia({ prefix: '/user' })
       });
 
       token.maxAge = 86400;
-      // token.secure = true;
       // token.httpOnly = true;
       token.value = tok;
-      // token.sameSite = 'none';
-      // token.domain = 'localhost:3001';
 
       return {
         success: true,
@@ -100,12 +96,7 @@ export const user = new Elysia({ prefix: '/user' })
         },
       };
     },
-    {
-      body: loginUserBody,
-      // cookie: t.Cookie({
-      //   token: t.String(),
-      // }),
-    }
+    { body: loginUserBody }
   )
   .get(
     '/search',
@@ -138,7 +129,21 @@ export const user = new Elysia({ prefix: '/user' })
 
       return tok;
     },
-    {
-      query: userSearchQuery,
-    }
+    { query: userSearchQuery }
+  )
+  .get(
+    '/current',
+    async ({ cookie: { token }, jwt }) => {
+      if (!token || token.toString() === '') {
+        return unauthorized();
+      }
+      const user = await jwt.verify(token.toString());
+
+      if (!user) {
+        return unauthorized();
+      }
+
+      return user;
+    },
+    { cookie: t.Cookie({ token: t.String() }) }
   );

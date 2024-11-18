@@ -3,11 +3,13 @@ import type { NextRequest } from "next/server";
 
 // This function can be marked `async` if using `await` inside
 export function middleware(request: NextRequest) {
-  const token = request.cookies.getAll();
+  const token = request.cookies.get("token");
 
-  console.log("tokennnn", token);
-  return NextResponse.redirect(new URL("/login", request.url));
-  // return NextResponse.next();
+  // console.log("rexio", token);
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", request.url));
+  }
+  return NextResponse.next();
 }
 
 // See "Matching Paths" below to learn more

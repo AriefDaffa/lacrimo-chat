@@ -8,9 +8,9 @@ import Button from "@/app/_components/Button";
 import Flexer from "@/app/_components/Flexer";
 import Input from "@/app/_components/Input";
 import Label from "@/app/_components/Label";
-// import useLogin from "../_services/useLogin";
+import ErrorAlert from "@/app/_components/alert/ErrorAlert";
+import useLogin from "../_hooks/useLogin";
 import type { ILoginForm } from "../_types/ILoginForm";
-import { login } from "../_services/login";
 
 const LoginForm = () => {
   const {
@@ -18,11 +18,12 @@ const LoginForm = () => {
     formState: { errors },
     handleSubmit,
   } = useForm<ILoginForm>();
-  // const { login, isLoading } = useLogin();
+  const { loginFunc, errMsg, isLoading } = useLogin();
 
   const onSubmit: SubmitHandler<ILoginForm> = (data) => {
-    login(data);
+    loginFunc(data);
   };
+  console.log(errMsg);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -61,11 +62,11 @@ const LoginForm = () => {
             />
           </Flexer>
         </Flexer>
+        {errMsg !== "" && <ErrorAlert>{errMsg}</ErrorAlert>}
         <Button
-          disabled={!isEmpty(errors)}
+          disabled={isLoading || !isEmpty(errors)}
           type="submit"
-          // text={isLoading ? "Loading..." : "Submit"}
-          text={"Submit"}
+          text={isLoading ? "Loading..." : "Submit"}
         />
         <div className="text-center text-sm text-c-gray-text">
           Doesn&apos;t have an account?{" "}

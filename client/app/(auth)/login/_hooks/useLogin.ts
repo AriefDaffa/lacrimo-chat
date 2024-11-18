@@ -1,43 +1,40 @@
 import { useCallback, useState } from "react";
-import { ILoginForm } from "../_types/ILoginForm";
+import { useRouter } from "next/navigation";
+
+import { login } from "../_services/login";
+import type { ILoginForm } from "../_types/ILoginForm";
 
 const useLogin = () => {
   const [data, setData] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
-  const login = useCallback(async (props: ILoginForm) => {
-    setIsLoading(true);
-    setErrMsg("");
+  const navigate = useRouter();
 
-    const req = await fetch(
-      `${process.env.NEXT_PUBLIC_API_HOST}/v1/user/login`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: props.email,
-          password: props.password,
-        }),
-      },
-    );
+  const loginFunc = useCallback(
+    async (props: ILoginForm) => {
+      setIsLoading(true);
+      setErrMsg("");
 
-    const resp = await req.json();
+      const req = await login(props);
 
-    setIsLoading(false);
+      const resp = await req.json();
 
-    if (req.status < 300) {
-      setData(resp);
-    } else {
-      setErrMsg(resp?.message || "Internal Server Error");
-    }
+      setIsLoading(false);
 
-    return req;
-  }, []);
+      if (req.status < 300) {
+        setData(resp);
+        navigate.replace("/");
+      } else {
+        setErrMsg(resp?.message || "Internal Server Error");
+      }
 
-  return { login, data, isLoading, errMsg };
+      return req;
+    },
+    [navigate],
+  );
+
+  return { loginFunc, data, isLoading, errMsg };
 };
 
 export default useLogin;

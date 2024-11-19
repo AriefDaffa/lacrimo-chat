@@ -7,7 +7,9 @@ interface InputProps {
   id?: string;
   value?: string | readonly string[] | number | undefined;
   onChange?: ChangeEventHandler | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   errMsg?: string | FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
+  className?: string;
 }
 
 const Input: FC<InputProps> = ({
@@ -16,18 +18,19 @@ const Input: FC<InputProps> = ({
   id,
   onChange,
   value,
-  errMsg,
+  errMsg = "",
+  className = "",
   ...props
 }) => {
   return (
-    <div className="">
+    <div className="w-full">
       <input
         id={id}
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className={`w-full rounded-lg border-2 p-2 outline-none ${errMsg !== "" ? "border-red-500" : "border-gray-200"}`}
+        className={`w-full rounded-lg border-2 p-2 outline-none ${errMsg !== "" ? "border-red-500" : "border-gray-200"} ${className}`}
         {...props}
       />
       {errMsg !== "" && (

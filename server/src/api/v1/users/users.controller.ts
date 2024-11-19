@@ -100,34 +100,32 @@ export const user = new Elysia({ prefix: '/user' })
   )
   .get(
     '/search',
-    async ({ query: { q }, jwt, headers: { authorization } }) => {
-      const tok = validateToken(authorization || '');
-
-      if (typeof tok === 'string') {
-        const user = await jwt.verify(tok);
-
-        if (!user) {
-          return unauthorized();
-        }
-
-        const find = await findByUsername(q);
-
-        if (!find.length) {
-          return notFound('User not found');
-        }
-
-        return {
-          success: true,
-          message: 'User found!',
-          data: {
-            id: find[0].id,
-            username: find[0].username,
-            email: find[0].email,
-          },
-        };
+    async ({ query: { q }, jwt, cookie: { token } }) => {
+      if (!token || token.toString() === '') {
+        return unauthorized();
       }
 
-      return tok;
+      const verifyTok = await jwt.verify(token.toString());
+
+      if (!verifyTok) {
+        return unauthorized();
+      }
+
+      const find = await findByUsername(q);
+
+      if (!find.length) {
+        return notFound('User not found');
+      }
+
+      return {
+        success: true,
+        message: 'User found!',
+        data: {
+          id: find[0].id,
+          username: find[0].username,
+          email: find[0].email,
+        },
+      };
     },
     { query: userSearchQuery }
   )

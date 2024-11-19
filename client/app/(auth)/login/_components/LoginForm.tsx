@@ -27,7 +27,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Flexer gap="6">
+      <Flexer gap="4">
         <Flexer gap="2">
           <Flexer gap="1">
             <Label text="Email" />

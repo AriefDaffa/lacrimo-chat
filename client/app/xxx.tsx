@@ -18,7 +18,7 @@ const Page = () => {
   const socket = useRef<WebSocket | null>(null);
 
   const token =
-    "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6NCwidXNlcm5hbWUiOiJUZXN0IDIiLCJlbWFpbCI6ImJAbWFpbC5jb20iLCJleHAiOjE3MzIzNjQ2MDV9.NQ0u8vZRyYyjDuU-mzXgQKwLLufgefn46xnuiz_3WG4";
+    "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6OCwidXNlcm5hbWUiOiJSYXl5IiwiZW1haWwiOiJjQG1haWwuY29tIiwiZXhwIjoxNzMyNTExNjA5fQ.x8UyB5JC0xJ7JA3QSYc9Bdu-axJPl1D18qiw8s7YqkI";
 
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -36,7 +36,7 @@ const Page = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const req = await fetch("http://localhost:3000/v1/message?id=3", {
+      const req = await fetch("http://localhost:5000/v1/message?id=3", {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -59,7 +59,7 @@ const Page = () => {
   }, []);
 
   useEffect(() => {
-    socket.current = new WebSocket("ws://localhost:3000/v1/chat?id=3", [token]);
+    socket.current = new WebSocket("ws://localhost:5000/v1/chat?id=3", [token]);
 
     socket.current.onopen = () => {
       setIsConnected(true);

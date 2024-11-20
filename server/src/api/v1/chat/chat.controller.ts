@@ -1,30 +1,82 @@
+import { Stream } from '@elysiajs/stream';
 import { Elysia, t } from 'elysia';
 
 import { notFound, unauthorized } from '../../../common/utils';
 import jwt from '../../../common/jwt';
 import {
   createRoom,
+  fetchRoom,
   findMessage,
   findRoom,
   insertMessage,
 } from './chat.service';
 import { findUserByID } from '../users/users.service';
-import { extractToken } from '../../../utils/extractToken';
+import { db } from '../../../db/connection';
+import { messages } from '../../../db/schema';
 
 export const chat = new Elysia()
   .use(jwt)
+  // .get(
+  //   '/rooms',
+  //   ({ cookie: { token }, jwt }) =>
+  //     new Stream(async (stream) => {
+  //       if (!token || token.toString() === '') {
+  //         return unauthorized();
+  //       }
+
+  //       const user = await jwt.verify(token.toString());
+
+  //       if (!user) {
+  //         return unauthorized();
+  //       }
+  //       const rooms = await fetchRoom(Number(Number(user.id)));
+
+  //       stream.send({
+  //         success: true,
+  //         message: 'Data fetched!',
+  //         rooms,
+  //       });
+
+  //       // const interval = setInterval(async () => {
+  //       //   const rooms = await fetchRoom(Number(Number(user.id)));
+
+  //       //   stream.send({
+  //       //     success: true,
+  //       //     message: 'Data fetched!',
+  //       //     rooms,
+  //       //   });
+  //       // }, 5000);
+
+  //       stream.close();
+  //     })
+  // )
+  .get('/rooms', async ({ cookie: { token }, jwt }) => {
+    if (!token || token.toString() === '') {
+      return unauthorized();
+    }
+
+    const user = await jwt.verify(token.toString());
+
+    if (!user) {
+      return unauthorized();
+    }
+
+    const rooms = await fetchRoom(Number(user.id));
+
+    return {
+      success: true,
+      message: 'Data fetched!',
+      rooms,
+    };
+  })
   .get(
     '/message',
-    async ({ query: { id }, headers, jwt }) => {
-      const authToken = headers['authorization'];
-
-      if (!authToken || authToken.toString() === '') {
+    async ({ query: { id }, jwt, cookie: { token } }) => {
+      if (!token || token.toString() === '') {
         return unauthorized();
       }
 
-      const splittedToken = extractToken(authToken);
-
-      const user = await jwt.verify(splittedToken);
+      const user = await jwt.verify(token.toString());
 
       if (!user) {
         return unauthorized();
@@ -49,6 +101,7 @@ export const chat = new Elysia()
       query: t.Object({
         id: t.String(),
       }),
+      cookie: t.Cookie({ token: t.String() }),
     }
   )
   .derive(async ({ headers, jwt, query: { id } }) => {

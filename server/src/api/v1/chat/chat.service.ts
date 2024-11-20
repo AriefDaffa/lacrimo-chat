@@ -1,6 +1,7 @@
-import { and, eq, or } from 'drizzle-orm';
+import { and, eq, or, sql } from 'drizzle-orm';
+
 import { db } from '../../../db/connection';
-import { messages, rooms } from '../../../db/schema';
+import { messages, rooms, users } from '../../../db/schema';
 
 export const findRoom = async (sender: number, receiver: number) => {
   return await db
@@ -54,4 +55,17 @@ export const findMessage = async (sender: number, receiver: number) => {
         and(eq(messages.receiver, sender), eq(messages.sender, receiver))
       )
     );
+};
+
+export const fetchRoom = async (id: number) => {
+  return await db
+    .select()
+    .from(rooms)
+    // .innerJoin(users, eq(rooms.senderOne, users.id)) // Join for senderOne
+    // .innerJoin(users.as('userTwo'), eq(rooms.senderTwo, users.as('userTwo').id)) // Join for senderTwo
+    .innerJoin(users, eq(rooms.senderOne, users.id)) // Join for senderOne
+    .leftJoin(messages, eq(rooms.id, messages.roomId)) // Left join messages to get the latest one
+    .where(sql`${rooms.senderOne} = ${id} OR ${rooms.senderTwo} = ${id}`)
+    .orderBy(messages.createdAt); // Order by message creation date (desc) to get the latest
+  // .groupBy(rooms.id, users.id, 'userTwo.id')
 };

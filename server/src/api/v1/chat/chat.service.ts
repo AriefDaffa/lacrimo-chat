@@ -60,12 +60,16 @@ export const findMessage = async (sender: number, receiver: number) => {
 export const fetchRoom = async (id: number) => {
   return await db
     .select()
-    .from(rooms)
-    // .innerJoin(users, eq(rooms.senderOne, users.id)) // Join for senderOne
-    // .innerJoin(users.as('userTwo'), eq(rooms.senderTwo, users.as('userTwo').id)) // Join for senderTwo
-    .innerJoin(users, eq(rooms.senderOne, users.id)) // Join for senderOne
-    .leftJoin(messages, eq(rooms.id, messages.roomId)) // Left join messages to get the latest one
-    .where(sql`${rooms.senderOne} = ${id} OR ${rooms.senderTwo} = ${id}`)
-    .orderBy(messages.createdAt); // Order by message creation date (desc) to get the latest
-  // .groupBy(rooms.id, users.id, 'userTwo.id')
+    .from(messages)
+    .where(or(eq(messages.sender, id), eq(messages.receiver, id)))
+    .leftJoin(
+      users,
+      or(eq(users.id, messages.sender), eq(users.id, messages.receiver))
+    );
+  // .where(or(eq(rooms.senderOne, id), eq(rooms.senderTwo, id)))
+  // .leftJoin(
+  //   users,
+  //   or(eq(rooms.senderOne, users.id), eq(rooms.senderTwo, users.id))
+  // );
+  // .where(or(eq(rooms.senderOne, id), eq(rooms.senderTwo, id)));
 };

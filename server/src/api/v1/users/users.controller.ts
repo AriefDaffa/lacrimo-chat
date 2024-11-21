@@ -88,7 +88,7 @@ export const user = new Elysia({ prefix: '/user' })
 
       return {
         success: true,
-        message: 'User created!',
+        message: 'Login success!',
         data: {
           username: findUser[0].username,
           email: findUser[0].email,

@@ -7,6 +7,7 @@ export const users = pgTable('users', {
   email: varchar({ length: 255 }).notNull().unique(),
   password: varchar({ length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at'),
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
@@ -20,6 +21,7 @@ export const rooms = pgTable('rooms', {
   senderOne: integer('sender_one').references(() => users.id),
   senderTwo: integer('sender_two').references(() => users.id),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at'),
 });
 
 export const roomsRelations = relations(rooms, ({ one, many }) => ({
@@ -37,6 +39,7 @@ export const messages = pgTable('messages', {
   receiver: integer().references(() => users.id),
   message: varchar().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at'),
 });
 
 export const messageRelations = relations(messages, ({ one }) => ({

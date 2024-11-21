@@ -23,13 +23,12 @@ const LoginForm = () => {
   const onSubmit: SubmitHandler<ILoginForm> = (data) => {
     loginFunc(data);
   };
-  console.log(errMsg);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <Flexer gap="4">
         <Flexer gap="2">
-          <Flexer gap="1">
+          <Flexer className="gap-1">
             <Label text="Email" />
             <Input
               {...register("email", {
@@ -43,7 +42,7 @@ const LoginForm = () => {
               placeholder="Enter your email"
             />
           </Flexer>
-          <Flexer gap="1">
+          <Flexer className="gap-1">
             <Label text="Password" />
             <Input
               {...register("password", {

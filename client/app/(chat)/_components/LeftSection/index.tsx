@@ -1,54 +1,25 @@
 "use client";
 
 import { FiSearch } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import Card from "@/app/_components/Card";
 import Flexer from "@/app/_components/Flexer";
-import useDebouncedValue from "@/app/_hooks/useDebouncedValue";
 
 import Profile from "./Profile";
 import { useUserProfile } from "../../_contexts/UserProfileContext";
-import { searchUser } from "../../_services/search-user";
+// import { searchUser } from "../../_services/search-user";
+// import useUserSearch from "../../_hooks/useUserSearch";
+import useMessageList from "../../_hooks/useMessageList";
+import ChatList from "./ChatList";
 
 const LeftSection = () => {
-  const [data, setData] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-  const [errMsg, setErrMsg] = useState("");
+  const [keyword, setKeyword] = useState("");
 
   const { profile, loading, error } = useUserProfile();
 
-  const [keyword, setKeyword] = useState("");
-
-  const debouncedKeyword = useDebouncedValue(keyword, 500);
-
-  useEffect(() => {
-    if (debouncedKeyword) {
-      console.log("Search API call with:", debouncedKeyword);
-      // Call your API or perform any search logic here
-      const searchFunc = async () => {
-        setIsLoading(true);
-        setErrMsg("");
-
-        const req = await searchUser(debouncedKeyword);
-
-        const resp = await req.json();
-
-        setIsLoading(false);
-
-        if (req.status < 300) {
-          setData(resp);
-          // navigate.replace("/");
-        } else {
-          setErrMsg(resp?.message || "Internal Server Error");
-        }
-      };
-
-      searchFunc();
-    }
-  }, [debouncedKeyword]);
-
-  console.log(data);
+  // const { data: chatList, errMsg, isLoading } = useUserSearch(keyword);
+  const { data: chatList } = useMessageList();
 
   return (
     <Card>
@@ -63,10 +34,20 @@ const LeftSection = () => {
             value={keyword}
             type="text"
             className="w-full py-2 outline-none"
+            placeholder="Search users"
             onChange={(e) => setKeyword(e.target.value)}
           />
         </Flexer>
-        {/* <FriendList /> */}
+        <div className="h-[1px] w-full bg-gray-200"></div>
+        <Flexer className="gap-1">
+          {chatList?.rooms?.map((item, idx) => (
+            <ChatList
+              key={idx}
+              username={item?.users?.username}
+              message={item?.messages?.message}
+            />
+          ))}
+        </Flexer>
       </Flexer>
     </Card>
   );

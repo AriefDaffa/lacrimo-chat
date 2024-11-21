@@ -16,40 +16,6 @@ import { messages } from '../../../db/schema';
 
 export const chat = new Elysia()
   .use(jwt)
-  // .get(
-  //   '/rooms',
-  //   ({ cookie: { token }, jwt }) =>
-  //     new Stream(async (stream) => {
-  //       if (!token || token.toString() === '') {
-  //         return unauthorized();
-  //       }
-
-  //       const user = await jwt.verify(token.toString());
-
-  //       if (!user) {
-  //         return unauthorized();
-  //       }
-  //       const rooms = await fetchRoom(Number(Number(user.id)));
-
-  //       stream.send({
-  //         success: true,
-  //         message: 'Data fetched!',
-  //         rooms,
-  //       });
-
-  //       // const interval = setInterval(async () => {
-  //       //   const rooms = await fetchRoom(Number(Number(user.id)));
-
-  //       //   stream.send({
-  //       //     success: true,
-  //       //     message: 'Data fetched!',
-  //       //     rooms,
-  //       //   });
-  //       // }, 5000);
-
-  //       stream.close();
-  //     })
-  // )
   .get('/rooms', async ({ cookie: { token }, jwt }) => {
     if (!token || token.toString() === '') {
       return unauthorized();
@@ -63,10 +29,66 @@ export const chat = new Elysia()
 
     const rooms = await fetchRoom(Number(user.id));
 
+    rooms.sort((a, b) => {
+      const dateA = new Date(a?.messages?.createdAt).getTime();
+      const dateB = new Date(b?.messages?.createdAt).getTime();
+      return dateA - dateB;
+    });
+
+    const uniqueUsers = new Set();
+    const filteredRooms = rooms.filter((room) => {
+      if (uniqueUsers.has(room?.users?.id)) {
+        return false;
+      }
+      uniqueUsers.add(room?.users?.id);
+      return true;
+    });
+
+    // const getUniqueUsersWithRooms = (data) => {
+    //   const uniqueUsers = {};
+    //   const updatedRooms = [];
+
+    //   data.forEach((entry) => {
+    //     const user = entry.users;
+
+    //     if (!uniqueUsers[user.id]) {
+    //       uniqueUsers[user.id] = user;
+    //       updatedRooms.push(entry);
+    //     }
+    //   });
+
+    //   return updatedRooms;
+    // };
+
     return {
       success: true,
       message: 'Data fetched!',
-      rooms,
+      rooms: rooms
+        .sort((a, b) => {
+          const dateA = new Date(a.messages.createdAt).getTime();
+          const dateB = new Date(b.messages.createdAt).getTime();
+          return dateA - dateB;
+        })
+        .reduce((acc: any[], room) => {
+          if (!acc.some((existing) => existing.users.id === room?.users?.id)) {
+            acc.push({
+              messages: {
+                id: room.messages.id,
+                roomId: room.messages.roomId,
+                sender: room.messages.sender,
+                receiver: room.messages.receiver,
+                message: room.messages.message,
+                createdAt: room.messages.createdAt,
+              },
+              users: {
+                id: room?.users?.id,
+                username: room?.users?.username,
+                email: room?.users?.email,
+              },
+            });
+          }
+          return acc;
+        }, []),
     };
   })
   .get(

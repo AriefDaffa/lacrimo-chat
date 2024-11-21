@@ -29,7 +29,7 @@ const RegisterForm = () => {
     <form onSubmit={handleSubmit(onSubmit)}>
       <Flexer gap="6">
         <Flexer gap="2">
-          <Flexer gap="1">
+          <Flexer className="gap-1">
             <Label text="Username" />
             <Input
               {...register("username", {
@@ -43,7 +43,7 @@ const RegisterForm = () => {
               placeholder="Enter your username"
             />
           </Flexer>
-          <Flexer gap="1">
+          <Flexer className="gap-1">
             <Label text="Email" />
             <Input
               {...register("email", {

@@ -1,39 +1,40 @@
-import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import { searchUser } from "../_services/search-user";
+import useDebouncedValue from "@/app/_hooks/useDebouncedValue";
 
-const useUserSearch = () => {
+const useUserSearch = (keyword: string) => {
   const [data, setData] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
-  const navigate = useRouter();
+  const debouncedKeyword = useDebouncedValue(keyword, 500);
 
-  const loginFunc = useCallback(
-    async (keyword: string) => {
-      setIsLoading(true);
-      setErrMsg("");
+  useEffect(() => {
+    if (debouncedKeyword) {
+      const searchFunc = async () => {
+        setIsLoading(true);
+        setErrMsg("");
 
-      const req = await searchUser(keyword);
+        const req = await searchUser(debouncedKeyword);
 
-      const resp = await req.json();
+        const resp = await req.json();
 
-      setIsLoading(false);
+        setIsLoading(false);
 
-      if (req.status < 300) {
-        setData(resp);
-        navigate.replace("/");
-      } else {
-        setErrMsg(resp?.message || "Internal Server Error");
-      }
+        if (req.status < 300) {
+          setData(resp);
+          // navigate.replace("/");
+        } else {
+          setErrMsg(resp?.message || "Internal Server Error");
+        }
+      };
 
-      return req;
-    },
-    [navigate],
-  );
+      searchFunc();
+    }
+  }, [debouncedKeyword]);
 
-  return { loginFunc, data, isLoading, errMsg };
+  return { data, isLoading, errMsg };
 };
 
 export default useUserSearch;

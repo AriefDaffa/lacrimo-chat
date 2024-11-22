@@ -5,6 +5,7 @@ import { useMemo, type FC } from "react";
 
 import Flexer from "@/app/_components/Flexer";
 import type { IUser } from "../../_types/IUser";
+import { BsThreeDotsVertical } from "react-icons/bs";
 
 interface ProfileProps {
   profile?: IUser | null;
@@ -26,10 +27,11 @@ const Profile: FC<ProfileProps> = ({ profile }) => {
           suppressHydrationWarning
         />
       </div>
-      <div className="">
+      <div className="flex-1">
         <div className="text-lg font-semibold">{profile?.username}</div>
         <div className="text-sm text-c-gray-text">{profile?.email}</div>
       </div>
+      <BsThreeDotsVertical className="mr-2" />
     </Flexer>
   );
 };

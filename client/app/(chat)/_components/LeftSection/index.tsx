@@ -11,16 +11,19 @@ import SearchList from "./SearchList";
 import SearchInput from "./SearchInput";
 import useMessageList from "../../_hooks/useMessageList";
 import useUserSearch from "../../_hooks/useUserSearch";
+// import useMessageStream from "../../_hooks/useMessageStream";
 import { useUserProfile } from "../../_contexts/UserProfileContext";
 
 const LeftSection = () => {
   const [keyword, setKeyword] = useState("");
 
   const { profile, loading, error } = useUserProfile();
+  // const { messages } = useMessageStream();
+
+  // console.log(messages);
   const { data: userList, isLoading: userSearchListLoading } =
     useUserSearch(keyword);
   const { data: chatList, isLoading: messageListLoading } = useMessageList();
-
   const handleOnKeyword = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
   }, []);

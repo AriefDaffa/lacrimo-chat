@@ -36,7 +36,6 @@ const useChatSocket = (id: number) => {
 
       if (req.status < 300) {
         const resp = await req.json();
-        // setCurrUserID(resp?.data.user.id);
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         resp.data.messages.forEach((item: any) => {
           setOldMsg((prev) => [
@@ -67,7 +66,6 @@ const useChatSocket = (id: number) => {
     );
 
     socket.current.onopen = () => {
-      //   setIsConnected(true);
       console.log("WebSocket connection established");
     };
 
@@ -87,7 +85,6 @@ const useChatSocket = (id: number) => {
     };
 
     socket.current.onclose = () => {
-      //   setIsConnected(false);
       console.log("WebSocket connection closed");
     };
 

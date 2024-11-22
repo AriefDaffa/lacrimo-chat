@@ -1,17 +1,13 @@
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { connectChatSocket } from "../_services/connect-chat-socket";
+import type { IMessage } from "../_types/IMessage";
 
 const useChatSocket = (id: number) => {
   const socket = useRef<WebSocket | null>(null);
 
-  const [oldMsg, setOldMsg] = useState<{ senderID: number; message: string }[]>(
-    [],
-  );
-  const [currentMsg, setCurrentMsg] = useState<
-    { senderID: number; message: string }[]
-  >([]);
-  //   const [currUserID, setCurrUserID] = useState(0);
+  const [oldMsg, setOldMsg] = useState<IMessage[]>([]);
+  const [currentMsg, setCurrentMsg] = useState<IMessage[]>([]);
   const [chatKeyword, setChatKeyword] = useState("");
 
   const handleChatSubmit = useCallback(() => {
@@ -19,7 +15,7 @@ const useChatSocket = (id: number) => {
       socket.current.send(chatKeyword);
       setChatKeyword("");
     } else {
-      console.error("WebSocket is not open. Cannot send message.");
+      console.log("WebSocket is not open. Cannot send message.");
     }
   }, [chatKeyword]);
 
@@ -29,6 +25,8 @@ const useChatSocket = (id: number) => {
   }, []);
 
   const closeSocket = useCallback(() => {
+    setCurrentMsg([]);
+    setOldMsg([]);
     socket.current?.close();
   }, []);
 
@@ -49,6 +47,8 @@ const useChatSocket = (id: number) => {
       }
     };
 
+    setCurrentMsg([]);
+    setOldMsg([]);
     if (!id || id === 0) {
       return;
     }
@@ -56,15 +56,14 @@ const useChatSocket = (id: number) => {
   }, [id]);
 
   useEffect(() => {
+    setCurrentMsg([]);
+    setOldMsg([]);
     if (!id || id === 0) {
       return;
     }
 
     socket.current = new WebSocket(
       `${process.env.NEXT_PUBLIC_WEBSOCKET_HOST}/v1/chat?id=${id}`,
-      [
-        "eyJhbGciOiJIUzI1NiJ9.eyJpZCI6MywidXNlcm5hbWUiOiJUZXN0IDEiLCJlbWFpbCI6ImFAbWFpbC5jb20iLCJleHAiOjE3MzI0OTAwMTZ9.Blqbxcbh5Ts99PvBD134Ou9bd2m5D9WA6abiEvlBCfE",
-      ],
     );
 
     socket.current.onopen = () => {
@@ -73,7 +72,7 @@ const useChatSocket = (id: number) => {
     };
 
     socket.current.onmessage = (e) => {
-      const parsedData = JSON.parse(e.data);
+      const parsedData = JSON?.parse(e?.data || "{}");
       setCurrentMsg((prev) => [
         ...prev,
         {
@@ -84,7 +83,7 @@ const useChatSocket = (id: number) => {
     };
 
     socket.current.onerror = (error) => {
-      console.error("WebSocket error:", error);
+      console.log("WebSocket error:", error);
     };
 
     socket.current.onclose = () => {

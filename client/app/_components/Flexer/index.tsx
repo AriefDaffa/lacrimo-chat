@@ -13,7 +13,7 @@ const Flexer: FC<FlexerProps> = ({
   flexDirection = "col",
   gap = "2",
   className = "",
-  onClick = () => {},
+  onClick,
 }) => {
   return (
     <div

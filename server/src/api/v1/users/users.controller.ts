@@ -120,11 +120,13 @@ export const user = new Elysia({ prefix: '/user' })
       return {
         success: true,
         message: 'User found!',
-        data: {
-          id: find[0].id,
-          username: find[0].username,
-          email: find[0].email,
-        },
+        data: find?.map((item) => {
+          return {
+            id: item.id,
+            username: item.username,
+            email: item.email,
+          };
+        }),
       };
     },
     { query: userSearchQuery }

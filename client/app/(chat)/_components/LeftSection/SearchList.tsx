@@ -1,17 +1,17 @@
+"use client";
+
+import Image from "next/image";
 import { useMemo, type FC } from "react";
 
 import Flexer from "@/app/_components/Flexer";
-import Image from "next/image";
+import { IUser } from "../../_types/IUser";
 import { useChatContext } from "../../_contexts/ChatContext";
-import type { IUser } from "../../_types/IUser";
 
-interface ChatListProps {
-  users: IUser;
-  username: string;
-  message: string;
+interface SearchListProps {
+  user: IUser;
 }
 
-const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
+const SearchList: FC<SearchListProps> = ({ user }) => {
   const { handleSelectChat } = useChatContext();
 
   const randomImageId = useMemo(() => Math.floor(Math.random() * 101) || 1, []);
@@ -19,8 +19,9 @@ const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
   return (
     <Flexer
       flexDirection="row"
+      gap="4"
       className="cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-gray-100"
-      onClick={() => handleSelectChat(users)}
+      onClick={() => handleSelectChat(user)}
     >
       <div className="h-14 w-14 overflow-hidden rounded-full border border-gray-200">
         <Image
@@ -33,11 +34,11 @@ const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
         />
       </div>
       <div className="">
-        <div className="text-lg font-semibold">{username}</div>
-        <div className="text-xs">{message}</div>
+        <div className="text-lg font-semibold">{user.username}</div>
+        <div className="text-sm text-c-gray-text">{user.email}</div>
       </div>
     </Flexer>
   );
 };
 
-export default ChatList;
+export default SearchList;

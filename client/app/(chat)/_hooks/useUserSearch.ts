@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 
-import { searchUser } from "../_services/search-user";
 import useDebouncedValue from "@/app/_hooks/useDebouncedValue";
+import { searchUser } from "../_services/search-user";
+import type { IUserSearch } from "../_types/IUserSearch";
 
 const useUserSearch = (keyword: string) => {
-  const [data, setData] = useState();
+  const [data, setData] = useState<IUserSearch>();
   const [isLoading, setIsLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
 
@@ -15,6 +16,11 @@ const useUserSearch = (keyword: string) => {
       const searchFunc = async () => {
         setIsLoading(true);
         setErrMsg("");
+        setData({
+          success: false,
+          message: "",
+          data: null,
+        });
 
         const req = await searchUser(debouncedKeyword);
 

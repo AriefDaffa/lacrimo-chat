@@ -7,8 +7,8 @@ import { IoMdClose } from "react-icons/io";
 
 import Card from "@/app/_components/Card";
 import Flexer from "@/app/_components/Flexer";
-import { useChatContext } from "../../_contexts/ChatContext";
 import useChatSocket from "../../_hooks/useChatSocket";
+import { useChatContext } from "../../_contexts/ChatContext";
 import { useUserProfile } from "../../_contexts/UserProfileContext";
 
 const RightSection = () => {
@@ -39,7 +39,7 @@ const RightSection = () => {
         </div>
       ) : (
         <Flexer className="size-full">
-          <div className="p-4">
+          <div className="border-b p-4">
             <Flexer
               flexDirection="row"
               className="items-center justify-between"
@@ -77,14 +77,14 @@ const RightSection = () => {
                 item.senderID !== Number(profile?.id) ? (
                   <div
                     key={`${item.message}-${id}`}
-                    className="w-fit max-w-[50%] rounded-md bg-c-gray p-2"
+                    className="w-fit max-w-[50%] rounded-md bg-gray-200 px-3 py-2"
                   >
                     {item.message}
                   </div>
                 ) : (
                   <div
                     key={`${item.message}-${id}`}
-                    className="w-fit max-w-[50%] self-end rounded-md bg-blue-200 p-2"
+                    className="w-fit max-w-[50%] self-end rounded-md bg-blue-200 px-3 py-2"
                   >
                     {item.message}
                   </div>
@@ -96,14 +96,14 @@ const RightSection = () => {
                   item.senderID !== Number(profile?.id) ? (
                     <div
                       key={`${item.message}-${id}`}
-                      className="w-fit max-w-[50%] rounded-md bg-c-gray p-2"
+                      className="w-fit max-w-[50%] rounded-md bg-gray-200 px-3 py-2"
                     >
                       {item.message}
                     </div>
                   ) : (
                     <div
                       key={`${item.message}-${id}`}
-                      className="w-fit max-w-[50%] self-end rounded-md bg-blue-200 p-2"
+                      className="w-fit max-w-[50%] self-end rounded-md bg-blue-200 px-3 py-2"
                     >
                       {item.message}
                     </div>
@@ -128,7 +128,6 @@ const RightSection = () => {
                   onChange={handleOnChange}
                 />
               </div>
-              {/* <div className="">1</div> */}
               <div className="flex cursor-pointer items-center justify-center rounded-full bg-blue-600 p-3 text-white">
                 <FiSend className="mt-[1px]" />
               </div>

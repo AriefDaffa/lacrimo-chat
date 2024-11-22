@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 
 import { db } from '../../../db/connection';
 import { users } from '../../../db/schema';
@@ -9,7 +9,10 @@ export const findByEmail = async (email: string) => {
 };
 
 export const findByUsername = async (username: string) => {
-  return await db.select().from(users).where(eq(users.username, username));
+  return await db
+    .select()
+    .from(users)
+    .where(ilike(users.username, `%${username}%`));
 };
 
 export const findUserByID = async (id: number) => {

@@ -126,14 +126,12 @@ export const chat = new Elysia()
       cookie: t.Cookie({ token: t.String() }),
     }
   )
-  .derive(async ({ headers, jwt, query: { id } }) => {
-    const authToken = headers['sec-websocket-protocol'];
-
-    if (!authToken || authToken.toString() === '') {
+  .derive(async ({ jwt, query: { id }, cookie: { token } }) => {
+    if (!token || token.toString() === '') {
       return unauthorized();
     }
 
-    const user = await jwt.verify(authToken);
+    const user = await jwt.verify(token.toString());
 
     if (!user) {
       return unauthorized();

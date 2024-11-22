@@ -1,5 +1,7 @@
 import type { FC, ReactNode } from "react";
+
 import { UserProfileProvider } from "./_contexts/UserProfileContext";
+import { ChatContextProvider } from "./_contexts/ChatContext";
 
 interface LayoutProps {
   children: ReactNode;
@@ -8,11 +10,13 @@ interface LayoutProps {
 const Layout: FC<LayoutProps> = ({ children }) => {
   return (
     <UserProfileProvider>
-      <div className="flex w-full bg-c-gray">
-        <div className="mx-auto h-screen w-full max-w-screen-xl bg-c-gray p-4">
-          {children}
+      <ChatContextProvider>
+        <div className="flex w-full bg-c-gray">
+          <div className="mx-auto h-screen w-full max-w-screen-xl bg-c-gray p-4">
+            {children}
+          </div>
         </div>
-      </div>
+      </ChatContextProvider>
     </UserProfileProvider>
   );
 };

@@ -5,6 +5,7 @@ interface FlexerProps {
   gap?: string;
   className?: string;
   flexDirection?: "col" | "row";
+  onClick?: () => void;
 }
 
 const Flexer: FC<FlexerProps> = ({
@@ -12,9 +13,13 @@ const Flexer: FC<FlexerProps> = ({
   flexDirection = "col",
   gap = "2",
   className = "",
+  onClick = () => {},
 }) => {
   return (
-    <div className={`flex flex-${flexDirection} gap-${gap} ${className}`}>
+    <div
+      className={`flex flex-${flexDirection} gap-${gap} ${className}`}
+      onClick={onClick}
+    >
       {children}
     </div>
   );

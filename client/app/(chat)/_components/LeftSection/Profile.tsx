@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 // import { IoMdPersonAdd } from "react-icons/io";
 import type { FC } from "react";
@@ -16,14 +18,15 @@ const Profile: FC<ProfileProps> = ({ profile }) => {
     <Flexer flexDirection="row" gap="4">
       <div className="h-14 w-14 overflow-hidden rounded-full border border-gray-200">
         <Image
-          src="/images/male-placeholder.png"
+          src={`https://picsum.photos/id/${Math.floor(Math.random() * 101) || 1}/200/300`}
           alt=""
           width={100}
           height={100}
           className="size-full object-cover"
+          suppressHydrationWarning
         />
       </div>
-      <Flexer gap="1" className="flex-1 justify-center">
+      <Flexer className="flex-1 justify-center">
         <div className="text-lg font-semibold">{profile?.username}</div>
         <div className="text-sm text-c-gray-text">{profile?.email}</div>
       </Flexer>

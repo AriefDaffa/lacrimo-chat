@@ -7,11 +7,9 @@ import Card from "@/app/_components/Card";
 import Flexer from "@/app/_components/Flexer";
 
 import Profile from "./Profile";
-import { useUserProfile } from "../../_contexts/UserProfileContext";
-// import { searchUser } from "../../_services/search-user";
-// import useUserSearch from "../../_hooks/useUserSearch";
-import useMessageList from "../../_hooks/useMessageList";
 import ChatList from "./ChatList";
+import useMessageList from "../../_hooks/useMessageList";
+import { useUserProfile } from "../../_contexts/UserProfileContext";
 
 const LeftSection = () => {
   const [keyword, setKeyword] = useState("");
@@ -40,13 +38,16 @@ const LeftSection = () => {
         </Flexer>
         <div className="h-[1px] w-full bg-gray-200"></div>
         <Flexer className="gap-1">
-          {chatList?.rooms?.map((item, idx) => (
-            <ChatList
-              key={idx}
-              username={item?.users?.username}
-              message={item?.messages?.message}
-            />
-          ))}
+          {chatList?.rooms
+            ?.slice(1)
+            ?.map((item, idx) => (
+              <ChatList
+                key={idx}
+                users={item?.users}
+                username={item?.users?.username}
+                message={item?.messages?.message}
+              />
+            ))}
         </Flexer>
       </Flexer>
     </Card>

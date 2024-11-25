@@ -27,7 +27,7 @@ const RegisterForm = () => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
-      <Flexer gap="6">
+      <Flexer className="gap-4">
         <Flexer gap="2">
           <Flexer className="gap-1">
             <Label text="Username" />

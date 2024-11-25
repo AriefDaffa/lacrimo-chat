@@ -1,4 +1,4 @@
-import { and, eq, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, not, or, sql } from 'drizzle-orm';
 
 import { db } from '../../../db/connection';
 import { messages, rooms, users } from '../../../db/schema';
@@ -58,18 +58,15 @@ export const findMessage = async (sender: number, receiver: number) => {
 };
 
 export const fetchRoom = async (id: number) => {
-  return await db
+  const sq = db
     .select()
     .from(messages)
-    .where(or(eq(messages.sender, id), eq(messages.receiver, id)))
-    .leftJoin(
-      users,
-      or(eq(users.id, messages.sender), eq(users.id, messages.receiver))
-    );
-  // .where(or(eq(rooms.senderOne, id), eq(rooms.senderTwo, id)))
-  // .leftJoin(
-  //   users,
-  //   or(eq(rooms.senderOne, users.id), eq(rooms.senderTwo, users.id))
-  // );
-  // .where(or(eq(rooms.senderOne, id), eq(rooms.senderTwo, id)));
+    .where(isNotNull(messages.receiver))
+    .orderBy(desc(messages.createdAt))
+    .as('messages');
+
+  return await db
+    .selectDistinctOn([users.id])
+    .from(users)
+    .innerJoin(sq, or(eq(sq.sender, users.id), eq(sq.receiver, users.id)));
 };

@@ -9,7 +9,7 @@ const useMessageList = () => {
   const [data, setData] = useState<{
     success: boolean;
     message: string;
-    rooms: IMessengerList[];
+    data: IMessengerList[];
   }>();
 
   useEffect(() => {

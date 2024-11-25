@@ -60,7 +60,10 @@ const RightSection = () => {
                   onChange={handleOnChange}
                 />
               </div>
-              <div className="flex cursor-pointer items-center justify-center rounded-full bg-blue-600 p-3 text-white">
+              <div
+                onClick={handleChatSubmit}
+                className="flex cursor-pointer items-center justify-center rounded-full bg-blue-600 p-3 text-white"
+              >
                 <FiSend className="mt-[1px]" />
               </div>
             </form>

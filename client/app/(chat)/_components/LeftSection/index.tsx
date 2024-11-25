@@ -9,21 +9,19 @@ import Profile from "./Profile";
 import ChatList from "./ChatList";
 import SearchList from "./SearchList";
 import SearchInput from "./SearchInput";
-import useMessageList from "../../_hooks/useMessageList";
 import useUserSearch from "../../_hooks/useUserSearch";
-// import useMessageStream from "../../_hooks/useMessageStream";
 import { useUserProfile } from "../../_contexts/UserProfileContext";
+import useMsgListSocket from "../../_hooks/useMsgListSocket";
 
 const LeftSection = () => {
   const [keyword, setKeyword] = useState("");
 
   const { profile, loading, error } = useUserProfile();
-  // const { messages } = useMessageStream();
+  const { msgList } = useMsgListSocket();
 
-  // console.log(messages);
   const { data: userList, isLoading: userSearchListLoading } =
     useUserSearch(keyword);
-  const { data: chatList, isLoading: messageListLoading } = useMessageList();
+
   const handleOnKeyword = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setKeyword(e.target.value);
   }, []);
@@ -36,8 +34,8 @@ const LeftSection = () => {
         {keyword === "" ? (
           <Flexer className="gap-1">
             <div className="text-xs font-bold text-gray-600">messages</div>
-            {!messageListLoading ? (
-              chatList?.rooms
+            {msgList?.length ? (
+              msgList
                 ?.filter((item) => item.users.id !== profile?.id)
                 ?.map((item, idx) => (
                   <ChatList

@@ -22,7 +22,7 @@ const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
       className="cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-gray-100"
       onClick={() => handleSelectChat(users)}
     >
-      <div className="h-14 w-14 overflow-hidden rounded-full border border-gray-200">
+      <div className="h-12 w-12 overflow-hidden rounded-full border border-gray-200">
         <Image
           src={`https://picsum.photos/id/${randomImageId}/200/300`}
           alt=""

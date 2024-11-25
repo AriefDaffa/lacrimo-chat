@@ -11,8 +11,6 @@ import {
   insertMessage,
 } from './chat.service';
 import { findUserByID } from '../users/users.service';
-import { db } from '../../../db/connection';
-import { messages } from '../../../db/schema';
 
 export const chat = new Elysia()
   .use(jwt)
@@ -29,50 +27,10 @@ export const chat = new Elysia()
 
     const rooms = await fetchRoom(Number(user.id));
 
-    rooms.sort((a, b) => {
-      const dateA = new Date(a?.messages?.createdAt).getTime();
-      const dateB = new Date(b?.messages?.createdAt).getTime();
-      return dateA - dateB;
-    });
-
-    const uniqueUsers = new Set();
-    const filteredRooms = rooms.filter((room) => {
-      if (uniqueUsers.has(room?.users?.id)) {
-        return false;
-      }
-      uniqueUsers.add(room?.users?.id);
-      return true;
-    });
-
     return {
       success: true,
       message: 'Data fetched!',
-      rooms: rooms
-        .sort((a, b) => {
-          const dateA = new Date(a.messages.createdAt).getTime();
-          const dateB = new Date(b.messages.createdAt).getTime();
-          return dateA - dateB;
-        })
-        .reduce((acc: any[], room) => {
-          if (!acc.some((existing) => existing.users.id === room?.users?.id)) {
-            acc.push({
-              messages: {
-                id: room.messages.id,
-                roomId: room.messages.roomId,
-                sender: room.messages.sender,
-                receiver: room.messages.receiver,
-                message: room.messages.message,
-                createdAt: room.messages.createdAt,
-              },
-              users: {
-                id: room?.users?.id,
-                username: room?.users?.username,
-                email: room?.users?.email,
-              },
-            });
-          }
-          return acc;
-        }, []),
+      data: rooms,
     };
   })
   .get(
@@ -89,15 +47,15 @@ export const chat = new Elysia()
           return unauthorized();
         }
 
-        const rooms = await fetchRoom(Number(user.id));
+        setInterval(async () => {
+          const rooms = await fetchRoom(Number(user.id));
 
-        rooms.sort((a, b) => {
-          const dateA = new Date(a?.messages?.createdAt).getTime();
-          const dateB = new Date(b?.messages?.createdAt).getTime();
-          return dateA - dateB;
-        });
+          rooms.sort((a, b) => {
+            const dateA = new Date(a?.messages?.createdAt).getTime();
+            const dateB = new Date(b?.messages?.createdAt).getTime();
+            return dateA - dateB;
+          });
 
-        setInterval(() => {
           stream.send({
             success: true,
             message: 'Data fetched!',
@@ -168,6 +126,90 @@ export const chat = new Elysia()
       cookie: t.Cookie({ token: t.String() }),
     }
   )
+  .derive(async ({ jwt, cookie: { token } }) => {
+    if (!token || token.toString() === '') {
+      return unauthorized();
+    }
+
+    const user = await jwt.verify(token.toString());
+
+    if (!user) {
+      return unauthorized();
+    }
+
+    return {
+      senderData: {
+        id: user ? user.id : 0,
+        username: user ? user.username : '',
+        email: user ? user.email : '',
+      },
+    };
+  })
+  .ws('chat/list', {
+    async open(ws) {
+      const receiverId = ws.data.query.receiverId;
+
+      let params = 0;
+
+      if (!receiverId) {
+        ws.subscribe(`user-${ws.data.senderData.id}`);
+        params = Number(ws.data.senderData.id) || 0;
+      } else {
+        ws.subscribe(`user-${receiverId}`);
+        params = Number(receiverId) || 0;
+      }
+
+      ws.send(params);
+
+      try {
+        const rooms = await fetchRoom(params);
+
+        ws.send({
+          success: true,
+          message: 'Data fetched!',
+          data: rooms.sort((a, b) => {
+            return b.messages.id - a.messages.id;
+          }),
+        });
+      } catch (error) {
+        ws.send(error);
+      }
+    },
+    async message(ws, message) {
+      const receiverId = ws.data.query.receiverId;
+
+      let params = 0;
+
+      if (!receiverId) {
+        params = Number(ws.data.senderData.id) || 0;
+      } else {
+        params = Number(receiverId) || 0;
+      }
+
+      try {
+        const rooms = await fetchRoom(params);
+
+        ws.send({
+          success: true,
+          message: 'Data fetched!',
+          data: rooms.sort((a, b) => {
+            return b.messages.id - a.messages.id;
+          }),
+        });
+      } catch (error) {
+        ws.send(error);
+      }
+    },
+    close(ws) {
+      const receiverId = ws.data.query.receiverId;
+
+      if (!receiverId) {
+        ws.unsubscribe(`user-${ws.data.senderData.id}`);
+      } else {
+        ws.unsubscribe(`user-${receiverId}`);
+      }
+    },
+  })
   .derive(async ({ jwt, query: { id }, cookie: { token } }) => {
     if (!token || token.toString() === '') {
       return unauthorized();
@@ -218,18 +260,17 @@ export const chat = new Elysia()
     };
   })
   .ws('/chat', {
-    query: t.Object({
-      id: t.String(),
-    }),
     open(ws) {
-      const roomID = ws.data.roomID;
+      const roomID = ws.data?.roomID;
       ws.subscribe(roomID);
-      ws.send(ws.data.room || '');
+      ws.send(ws.data?.room || '');
     },
     async message(ws, message) {
-      const roomID = Number(ws.data.roomID) || 0;
-      const senderID = Number(ws.data.senderData.id) || 0;
-      const receiverID = Number(ws.data.receiverData.id) || 0;
+      const roomID = Number(ws.data?.roomID) || 0;
+      const senderID = Number(ws.data?.senderData.id) || 0;
+      const receiverID = Number(ws.data?.receiverData.id) || 0;
+
+      ws.subscribe(ws.data.roomID);
 
       try {
         await insertMessage(String(message), roomID, senderID, receiverID);
@@ -245,12 +286,31 @@ export const chat = new Elysia()
           message,
           time: new Date(),
         });
+
+        ws.subscribe(`user-${ws.data.receiverData.id}`);
+        ws.publish(`user-${ws.data.receiverData.id}`, {
+          success: 'true',
+          message: 'Message sent!',
+          data: [
+            {
+              users: {
+                id: ws.data.senderData.id,
+                username: ws.data.senderData.username,
+                email: ws.data.senderData.email,
+              },
+              messages: {
+                message,
+              },
+            },
+          ],
+        });
+        ws.unsubscribe(`user-${ws.data.receiverData.id}`);
       } catch (error) {
         ws.send(error);
       }
     },
     close(ws) {
-      const roomID = ws.data.roomID;
+      const roomID = ws.data?.roomID;
       ws.unsubscribe(roomID);
     },
   });

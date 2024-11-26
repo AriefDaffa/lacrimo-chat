@@ -12,8 +12,7 @@ services:
       - ./server/.env
     command: >
       sh -c "
-      sleep 10 &&
-      ./run.sh &&
+      bun migrate &&
       bun run dev"
     depends_on:
       db:

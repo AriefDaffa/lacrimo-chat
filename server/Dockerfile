@@ -15,9 +15,10 @@ COPY ./server/tsconfig.json .
 COPY ./server/.env .
 # COPY public public
 
-RUN chmod +x run.sh
+RUN chmod +x /app/run.sh
 
 ENV NODE_ENV production
-CMD ["./run.sh"]
+# CMD ["./run.sh"]
+CMD [ "bun", "dev" ]
 
 EXPOSE 3000

@@ -1,4 +1,4 @@
-FROM oven/bun
+FROM imbios/bun-node
 
 WORKDIR /app
 
@@ -20,5 +20,3 @@ RUN chmod +x /app/run.sh
 ENV NODE_ENV production
 # CMD ["./run.sh"]
 CMD [ "bun", "dev" ]
-
-EXPOSE 3000

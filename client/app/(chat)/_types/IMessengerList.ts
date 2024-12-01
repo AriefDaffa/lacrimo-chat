@@ -1,13 +1,10 @@
+import { IUser } from "./IUser";
+
 export interface IMessengerList {
   messages: Messages;
-  users: Users;
+  users: IUser;
 }
 
-interface Users {
-  id: number;
-  username: string;
-  email: string;
-}
 interface Messages {
   id: number;
   roomId: number;

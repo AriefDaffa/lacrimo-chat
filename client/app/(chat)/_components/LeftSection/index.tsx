@@ -11,13 +11,15 @@ import SearchList from "./SearchList";
 import SearchInput from "./SearchInput";
 import useUserSearch from "../../_hooks/useUserSearch";
 import { useUserProfile } from "../../_contexts/UserProfileContext";
-import useMsgListSocket from "../../_hooks/useMsgListSocket";
+import { useMsgList } from "../../_contexts/MsgListContext";
 
 const LeftSection = () => {
   const [keyword, setKeyword] = useState("");
 
   const { profile, loading, error } = useUserProfile();
-  const { msgList } = useMsgListSocket();
+  const { msgList } = useMsgList();
+
+  console.log(msgList);
 
   const { data: userList, isLoading: userSearchListLoading } =
     useUserSearch(keyword);
@@ -32,8 +34,8 @@ const LeftSection = () => {
         <Profile profile={profile} isLoading={loading} error={error} />
         <SearchInput keyword={keyword} handleKeywordChange={handleOnKeyword} />
         {keyword === "" ? (
-          <Flexer className="gap-1">
-            <div className="text-xs font-bold text-gray-600">messages</div>
+          <Flexer className="h-full gap-1 overflow-auto">
+            <div className="text-xs font-bold text-gray-600">Messages</div>
             {msgList?.length ? (
               msgList
                 ?.filter((item) => item.users.id !== profile?.id)
@@ -46,12 +48,12 @@ const LeftSection = () => {
                   />
                 ))
             ) : (
-              <div className="">Loading...</div>
+              <div className=""></div>
             )}
           </Flexer>
         ) : (
           <Flexer className="gap-1">
-            <div className="text-xs font-bold text-gray-600">search list</div>
+            <div className="text-xs font-bold text-gray-600">Search List</div>
             {!userSearchListLoading ? (
               userList?.data?.map((item, idx) => (
                 <SearchList key={idx} user={item} />

@@ -1,79 +1,69 @@
-import { useEffect, useRef, useState } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useCallback, useEffect, useRef, useState } from "react";
 
-import type { IMessengerList } from "../_types/IMessengerList";
+import { useMsgList } from "../_contexts/MsgListContext";
 
-const useMsgListSocket = () => {
+const useMsgListSocket = (receiverId?: number) => {
   const socket = useRef<WebSocket | null>(null);
 
-  const [msgList, setMsgList] = useState<IMessengerList[]>([]);
+  const [reconnecting, setReconnecting] = useState(false);
+  const [reconnectDelay, setReconnectDelay] = useState(1000);
 
-  useEffect(() => {
-    setMsgList([]);
+  const { setMessageList, setMsgList } = useMsgList();
 
-    socket.current = new WebSocket(
-      `${process.env.NEXT_PUBLIC_WEBSOCKET_HOST}/v1/chat/list`,
-    );
+  const triggerSend = useCallback(() => {
+    if (socket.current?.readyState === WebSocket.OPEN) {
+      socket.current.send("");
+    } else {
+      console.log("Message List is not open. Cannot send message.");
+    }
+  }, []);
+
+  const createSocketConnection = useCallback(() => {
+    if (receiverId) {
+      socket.current = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_HOST}/v1/chat/list?receiverId=${receiverId}`,
+      );
+    } else {
+      socket.current = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_HOST}/v1/chat/list`,
+      );
+    }
 
     socket.current.onopen = () => {
-      console.log("WebSocket connection established");
+      console.log("Message List connection established");
+      setReconnecting(false);
+      setReconnectDelay(1000);
     };
 
     socket.current.onmessage = (e) => {
       const parsedData = JSON?.parse(e?.data || "{}");
-
-      if (parsedData?.message === "Message sent!") {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        setMsgList((prevArray: any) => {
-          const { id: newUserId, username: newUsername } =
-            parsedData.data[0].users;
-          const newMessage = parsedData.data[0].messages.message;
-
-          const index = prevArray.findIndex(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (item: any) => item.users.id === newUserId,
-          );
-
-          if (index !== -1) {
-            const updatedItem = {
-              ...prevArray[index],
-              users: { ...prevArray[index].users, username: newUsername },
-              messages: { ...prevArray[index].messages, message: newMessage },
-            };
-
-            const newArray = [...prevArray];
-            newArray.splice(index, 1);
-            return [updatedItem, ...newArray];
-          } else {
-            return [
-              {
-                users: { id: newUserId, username: newUsername },
-                messages: { message: newMessage },
-              },
-              ...prevArray,
-            ];
-          }
-        });
+      if (
+        parsedData?.message === "Message sent!" &&
+        typeof parsedData !== "undefined"
+      ) {
+        setMessageList(parsedData);
       } else {
+        // setMessageList([]);
         setMsgList(parsedData?.data);
       }
     };
+  }, [receiverId, setMessageList, setMsgList]);
 
-    socket.current.onerror = (error) => {
-      console.log("WebSocket error:", error);
-    };
-
-    socket.current.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
+  useEffect(() => {
+    createSocketConnection();
 
     return () => {
       socket.current?.close();
-      console.log("WebSocket connection cleaned up");
+      console.log("Message List connection cleaned up");
     };
-  }, []);
+  }, [createSocketConnection]);
 
   return {
-    msgList,
+    // msgList: typeof msgList !== "undefined" ? msgList : [],
+    reconnecting,
+    reconnectDelay,
+    triggerSend,
   };
 };
 

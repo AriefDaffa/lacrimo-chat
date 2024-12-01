@@ -1,4 +1,5 @@
 import { Elysia, t } from 'elysia';
+import { cookie } from '@elysiajs/cookie';
 
 import {
   _createUser,
@@ -15,8 +16,6 @@ import {
   unprocessable,
 } from '../../../common/utils';
 import jwt from '../../../common/jwt';
-import { validateToken } from '../../../common/auth';
-import { cookie } from '@elysiajs/cookie';
 
 export const user = new Elysia({ prefix: '/user' })
   .use(jwt)
@@ -41,7 +40,14 @@ export const user = new Elysia({ prefix: '/user' })
 
       password = await Bun.password.hash(password);
 
-      const registerUser = await register({ email, password, username });
+      const randomImageId = Math.floor(Math.random() * 101) || 1;
+
+      const registerUser = await register({
+        email,
+        password,
+        username,
+        imageURL: `https://picsum.photos/id/${randomImageId}/200/300`,
+      });
 
       if (registerUser.length > 0) {
         return {

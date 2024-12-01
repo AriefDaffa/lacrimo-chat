@@ -1,4 +1,4 @@
-import { useMemo, type FC } from "react";
+import { type FC } from "react";
 
 import Flexer from "@/app/_components/Flexer";
 import Image from "next/image";
@@ -14,8 +14,6 @@ interface ChatListProps {
 const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
   const { handleSelectChat } = useChatContext();
 
-  const randomImageId = useMemo(() => Math.floor(Math.random() * 101) || 1, []);
-
   return (
     <Flexer
       flexDirection="row"
@@ -23,18 +21,24 @@ const ChatList: FC<ChatListProps> = ({ message, username, users }) => {
       onClick={() => handleSelectChat(users)}
     >
       <div className="h-12 w-12 overflow-hidden rounded-full border border-gray-200">
-        <Image
-          src={`https://picsum.photos/id/${randomImageId}/200/300`}
-          alt=""
-          width={100}
-          height={100}
-          className="size-full object-cover"
-          suppressHydrationWarning
-        />
+        {!users.imageURL ? (
+          <div className="flex size-full items-center justify-center font-semibold">
+            {users.username.charAt(0)}
+          </div>
+        ) : (
+          <Image
+            src={users.imageURL}
+            alt=""
+            width={100}
+            height={100}
+            className="size-full object-cover"
+            suppressHydrationWarning
+          />
+        )}
       </div>
-      <div className="">
+      <div className="flex-1">
         <div className="text-lg font-semibold">{username}</div>
-        <div className="text-xs">{message}</div>
+        <div className="line-clamp-1 text-xs">{message}</div>
       </div>
     </Flexer>
   );

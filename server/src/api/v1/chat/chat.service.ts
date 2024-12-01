@@ -61,7 +61,12 @@ export const fetchRoom = async (id: number) => {
   const sq = db
     .select()
     .from(messages)
-    .where(isNotNull(messages.receiver))
+    .where(
+      and(
+        isNotNull(messages.receiver),
+        or(eq(messages.sender, id), eq(messages.receiver, id))
+      )
+    )
     .orderBy(desc(messages.createdAt))
     .as('messages');
 

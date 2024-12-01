@@ -9,7 +9,7 @@ services:
     env_file:
       - ./server/.env
     ports:
-      - "${PORT}:${PORT}"
+      - "5000:5000"
     command: >
       sh -c "
       sleep 2 &&

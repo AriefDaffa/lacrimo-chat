@@ -1,4 +1,6 @@
-import type { FC } from "react";
+"use client";
+
+import { useEffect, useRef, type FC } from "react";
 import type { IMessage } from "../../_types/IMessage";
 import type { IUser } from "../../_types/IUser";
 import BlueBubble from "@/app/_components/ChatBubble/BlueBubble";
@@ -11,6 +13,14 @@ interface ChatProps {
 }
 
 const Chat: FC<ChatProps> = ({ profile, oldMsg, currentMsg }) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [oldMsg, currentMsg]);
+
   return (
     <div className="flex-1 overflow-auto px-4">
       <div className="flex flex-col gap-2 pb-2">
@@ -36,6 +46,7 @@ const Chat: FC<ChatProps> = ({ profile, oldMsg, currentMsg }) => {
               />
             ),
           )}
+        <div ref={messagesEndRef} />
       </div>
     </div>
   );

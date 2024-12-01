@@ -21,6 +21,7 @@ export const ChatContextProvider: FC<{ children: ReactNode }> = ({
     id: 0,
     email: "",
     username: "",
+    imageURL: "",
   });
 
   const handleSelectChat = useCallback((props: IUser) => {

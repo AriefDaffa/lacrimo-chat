@@ -1,7 +1,19 @@
 version: '3.8'
 
 services:
-  app:
+  client:
+    image: lacrimochat_fe:latest
+    build:
+      context: .
+      dockerfile: ./client/Dockerfile
+    env_file:
+      - ./client/.env
+    ports:
+      - "5001:3000"
+    depends_on:
+      - server
+
+  server:
     image: lacrimochat_be:latest
     build:
       context: .
